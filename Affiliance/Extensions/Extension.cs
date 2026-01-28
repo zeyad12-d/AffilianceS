@@ -1,5 +1,6 @@
 ﻿using Affiliance_core.Entites;
 using Affiliance_Infrasturcture.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
