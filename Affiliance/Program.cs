@@ -20,6 +20,7 @@ namespace Affiliance
             builder.Services.AddJwtAuthentication(builder.Configuration);
             builder.Services.AddSwaggerConfiguration();
             builder.Services.AddCorsConfiguration();
+            builder.Services.AddServices();
 
             var app = builder.Build();
 
