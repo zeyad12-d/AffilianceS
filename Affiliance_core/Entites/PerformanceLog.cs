@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Affiliance_core.Entities
+namespace Affiliance_core.Entites
 {
     public class PerformanceLog
     {

@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Affiliance_core.Entites;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Affiliance_core.Entites
 {
