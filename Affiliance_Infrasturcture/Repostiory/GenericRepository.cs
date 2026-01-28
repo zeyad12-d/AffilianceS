@@ -1,16 +1,12 @@
-﻿using Affiliance_core.Interfaces;
+﻿
+using Affiliance_core.interfaces;
 using Affiliance_Infrasturcture.Data;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Affiliance_Infrasturcture.Repostiory
 {
-    class GenericRepository<T> : IGenericRepository<T> where T : class
+  public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
         protected readonly AffiliancesDBcontext _context;
 

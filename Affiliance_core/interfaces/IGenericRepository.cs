@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace Affiliance_core.Interfaces
+namespace Affiliance_core.interfaces
 {
     public interface IGenericRepository<T> where T : class
     {

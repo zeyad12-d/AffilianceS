@@ -1,5 +1,7 @@
 ﻿using Affiliance_core.Entites;
+using Affiliance_core.interfaces;
 using Affiliance_Infrasturcture.Data;
+using Affiliance_Infrasturcture.Repostiory;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -117,6 +119,16 @@ namespace Affiliance_Api.Extensions
                            .AllowAnyHeader();
                 });
             });
+        }
+        #endregion
+        #region Services
+        public static void AddServices(this IServiceCollection services)
+        {
+           
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+            
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
         #endregion
     }
