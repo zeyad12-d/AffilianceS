@@ -129,6 +129,8 @@ namespace Affiliance_Api.Extensions
 
             
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IServicesManager, ServicesManager>();
+            services.AddScoped<IServiceFactory, ServiceFactory>();
         }
         #endregion
     }
