@@ -10,4 +10,8 @@
     <ProjectReference Include="..\Affiliance_Infrasturcture\Affiliance_Infrasturcture.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="services\" />
+  </ItemGroup>
+
 </Project>
