@@ -2,5 +2,6 @@
 {
     public interface IServicesManager
     {
+        IAiService AiService { get; }
     }
 }

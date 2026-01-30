@@ -2,6 +2,7 @@
 using Affiliance_core.interfaces;
 using Affiliance_Infrasturcture.Data;
 using Affiliance_Infrasturcture.Repostiory;
+using Affiliance_Infrasturcture.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -131,6 +132,8 @@ namespace Affiliance_Api.Extensions
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IServicesManager, ServicesManager>();
             services.AddScoped<IServiceFactory, ServiceFactory>();
+            
+            services.AddScoped<IAiService, AiService>();
         }
         #endregion
     }
