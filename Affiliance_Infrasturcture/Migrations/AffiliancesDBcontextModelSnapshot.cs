@@ -389,6 +389,12 @@ namespace Affiliance_Infrasturcture.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NationalIdPath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Niche")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -890,13 +896,13 @@ namespace Affiliance_Infrasturcture.Migrations
                     b.HasOne("Affiliance_core.Entites.Campaign", "Campaign")
                         .WithMany("CampaignApplications")
                         .HasForeignKey("CampaignId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Affiliance_core.Entites.Marketer", "Marketer")
-                        .WithMany()
+                        .WithMany("CampaignApplications")
                         .HasForeignKey("MarketerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Campaign");
@@ -1029,7 +1035,7 @@ namespace Affiliance_Infrasturcture.Migrations
                     b.HasOne("Affiliance_core.Entites.Marketer", "Marketer")
                         .WithMany()
                         .HasForeignKey("MarketerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Campaign");
@@ -1113,6 +1119,11 @@ namespace Affiliance_Infrasturcture.Migrations
                     b.Navigation("Campaigns");
 
                     b.Navigation("Children");
+                });
+
+            modelBuilder.Entity("Affiliance_core.Entites.Marketer", b =>
+                {
+                    b.Navigation("CampaignApplications");
                 });
 
             modelBuilder.Entity("Affiliance_core.Entites.TrackingLink", b =>

@@ -15,6 +15,8 @@ namespace Affiliance_core.Entites
         [ForeignKey("UserId")]
         public virtual User User { get; set; }
 
+        public string? NationalIdPath { get; set; } // Added based on requirements
+        public bool IsVerified { get; set; } = false; // Added based on requirements
 
         public string Bio { get; set; }
 
@@ -38,6 +40,6 @@ namespace Affiliance_core.Entites
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-       
+        public virtual ICollection<CampaignApplication> CampaignApplications { get; set; } = new List<CampaignApplication>();
     }
 }

@@ -20,8 +20,4 @@
     <ProjectReference Include="..\Affiliance_Applaction\Affiliance_Applaction.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
 </Project>

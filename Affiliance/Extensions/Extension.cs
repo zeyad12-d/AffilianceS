@@ -1,4 +1,5 @@
-﻿using Affiliance_core.Entites;
+﻿using Affiliance_Applaction.services;
+using Affiliance_core.Entites;
 using Affiliance_core.interfaces;
 using Affiliance_Infrasturcture.Data;
 using Affiliance_Infrasturcture.Repostiory;
@@ -18,7 +19,14 @@ namespace Affiliance_Api.Extensions
         public static void AddSqlConnection(this IServiceCollection services, IConfiguration config)
         {
             services.AddDbContext<AffiliancesDBcontext>(options =>
-                options.UseSqlServer(config.GetConnectionString("cs")));
+                options.UseSqlServer(config.GetConnectionString("cs"),
+                    sqlServerOptionsAction: sqlOptions =>
+                    {
+                        sqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 5,
+                            maxRetryDelay: TimeSpan.FromSeconds(30),
+                            errorNumbersToAdd: null);
+                    }));
         }
         #endregion
 
@@ -134,6 +142,8 @@ namespace Affiliance_Api.Extensions
             services.AddScoped<IServiceFactory, ServiceFactory>();
             
             services.AddScoped<IAiService, AiService>();
+            services.AddScoped<IFileService, FileService>();
+            services.AddScoped<IAccountService, AccountService>();
         }
         #endregion
     }

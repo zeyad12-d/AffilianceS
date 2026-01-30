@@ -54,7 +54,31 @@ namespace Affiliance_Infrasturcture.Data
                 .HasForeignKey<Admin>(a => a.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-          
+              builder.Entity<CampaignApplication>()
+           .HasOne(ca => ca.Marketer)
+           .WithMany(m => m.CampaignApplications)
+            .HasForeignKey(ca => ca.MarketerId)
+           .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<CampaignApplication>()
+                .HasOne(ca => ca.Campaign)
+                .WithMany(c => c.CampaignApplications)
+                .HasForeignKey(ca => ca.CampaignId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // TrackingLink relationships - use NoAction to prevent cascade cycles
+            builder.Entity<TrackingLink>()
+                .HasOne(tl => tl.Campaign)
+                .WithMany(c => c.TrackingLinks)
+                .HasForeignKey(tl => tl.CampaignId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<TrackingLink>()
+                .HasOne(tl => tl.Marketer)
+                .WithMany()
+                .HasForeignKey(tl => tl.MarketerId)
+                .OnDelete(DeleteBehavior.NoAction);
+
 
             var decimalEntities = builder.Model.GetEntityTypes()
                 .SelectMany(t => t.GetProperties())
