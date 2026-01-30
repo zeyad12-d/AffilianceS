@@ -67,11 +67,53 @@ namespace Affiliance_Infrasturcture.Services
                     var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor(inputName, input) };
 
                     using var results = _idCardSession.Run(inputs);
-                    var output = results.First().AsEnumerable<float>().ToArray();
+                    var namedOutput = results.First();
+                    var outputTensor = namedOutput.AsTensor<float>();
+                    var dims = outputTensor.Dimensions;
 
-                    bool isIdDetected = output.Any(confidence => confidence > 0.75f);
+                    if (dims.Length == 3)
+                    {
+                        // dims: [1, channels, boxes]
+                        int channels = dims[1];
+                        int boxes = dims[2];
 
-                    return isIdDetected ? "Success" : "Invalid_ID";
+                        // YOLO-like: [x, y, w, h, objectness, class0, class1, ...]
+                        const int classStartIndex = 5;
+                        float maxConfidence = 0f;
+
+                        for (int b = 0; b < boxes; b++)
+                        {
+                            float objectness = outputTensor[0, 4, b];
+                            float bestClassProb = 0f;
+
+                            if (channels > classStartIndex)
+                            {
+                                for (int c = classStartIndex; c < channels; c++)
+                                {
+                                    float p = outputTensor[0, c, b];
+                                    if (p > bestClassProb) bestClassProb = p;
+                                }
+                            }
+                            else
+                            {
+                                // No class probabilities present — treat objectness as final confidence
+                                bestClassProb = 1f;
+                            }
+
+                            float conf = objectness * bestClassProb;
+                            if (conf > maxConfidence) maxConfidence = conf;
+                        }
+
+                        const float threshold = 0.80f;
+                        return maxConfidence > threshold ? "Success" : "Invalid_ID";
+                    }
+                    else
+                    {
+                        // Fallback: flatten-based check (previous behavior)
+                        var flat = outputTensor.ToArray();
+                        bool isIdDetected = flat.Any(v => v > 0.75f);
+                        return isIdDetected ? "Success" : "Invalid_ID";
+                    }
                 }
                 catch (Exception ex)
                 {
