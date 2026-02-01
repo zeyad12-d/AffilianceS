@@ -1,54 +1,129 @@
-using System;
-using System.Threading.Tasks;
 using Affiliance_core.ApiHelper;
-using Affiliance_core.Dto;
+using Affiliance_core.Dto.MarkterDto;
 using Affiliance_core.Entites;
 using Affiliance_core.interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Affiliance_Applaction.services
 {
     public class AccountService : IAccountService
     {
+        private const string InvalidInputMessage = "Invalid input.";
+        private const string UserNotFoundMessage = "User Not Found By This Email";
+        private const string InvalidPasswordMessage = "Invalid Password";
+        private const string LoginSuccessMessage = "Login Successful";
+        private const string EmailExistsMessage = "User with this email already exists.";
+        private const string RegistrationFailedMessage = "Registration failed.";
+        private const string LoginFailedMessage = "Login failed.";
         private readonly UserManager<User> _userManager;
-        private readonly IServicesManager _servicesManager; // Contains AiService
+        private readonly IServicesManager _servicesManager; 
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFileService _fileService;
+        private readonly IConfiguration _configuration;
 
         public AccountService(
             UserManager<User> userManager,
             IServicesManager servicesManager,
             IUnitOfWork unitOfWork,
-            IFileService fileService)
+            IFileService fileService, IConfiguration configuration)
         {
             _userManager = userManager;
             _servicesManager = servicesManager;
             _unitOfWork = unitOfWork;
             _fileService = fileService;
+            _configuration = configuration;
         }
 
+        public async Task<ApiResponse<AuthModel>> LoginMarketerAsync(LoginMarkterDto dto)
+        {
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
+            {
+                return ApiResponse<AuthModel>.CreateFail(InvalidInputMessage);
+            }
+
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null) { return ApiResponse<AuthModel>.CreateFail(UserNotFoundMessage); }
+            var isPasswordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
+            if (!isPasswordValid) { return ApiResponse<AuthModel>.CreateFail(InvalidPasswordMessage); }
+           
+            var roles = await _userManager.GetRolesAsync(user);
+            var authClaims = new List<Claim> 
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                 new Claim(ClaimTypes.Email, user.Email),
+               new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            };
+
+            foreach(var role in roles) { authClaims.Add(new Claim(ClaimTypes.Role, role)); }
+
+          var Token = CreateJwtToken(authClaims);
+            var jwtToken = new JwtSecurityTokenHandler().WriteToken(Token);
+            var refreshToken = GenerateRefreshToken();
+            var refreshTokenExpiry = GetRefreshTokenExpiryTime();
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = refreshTokenExpiry;
+            user.LastLoginAt = DateTime.UtcNow;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                return ApiResponse<AuthModel>.CreateFail(LoginFailedMessage);
+            }
+
+            var authModel = new AuthModel
+            {
+                IsAuthenticated = true,
+                Token = jwtToken,
+                ExpiresOn = Token.ValidTo,
+                Message = LoginSuccessMessage,
+                RefreshToken = refreshToken,
+                RefreshTokenExpiresOn = refreshTokenExpiry
+            };
+            return ApiResponse<AuthModel>.CreateSuccess(authModel, LoginSuccessMessage);
+        }
+
+        
+
+        #region RegisterMarketerAsync
         public async Task<ApiResponse<string>> RegisterMarketerAsync(MarketerRegisterDto dto)
         {
-            // 1. Validate ID using AI Service
+            if (dto == null
+                || string.IsNullOrWhiteSpace(dto.Email)
+                || string.IsNullOrWhiteSpace(dto.Password)
+                || dto.NationalIdImage == null)
+            {
+                return ApiResponse<string>.CreateFail(InvalidInputMessage);
+            }
+
+            
             var aiResult = await _servicesManager.AiService.AnalyzeImageAsync(dto.NationalIdImage);
             if (aiResult != "Success")
             {
                 return ApiResponse<string>.CreateFail($"ID Validation Failed: {aiResult}");
             }
 
-            // 2. Check if user exists
+           
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
             if (existingUser != null)
             {
-                return ApiResponse<string>.CreateFail("User with this email already exists.");
+                return ApiResponse<string>.CreateFail(EmailExistsMessage);
             }
 
-            // 3. Create Application User (Identity)
+          
             var user = new User
             {
                 UserName = dto.Email,
                 Email = dto.Email,
-                FirstName = dto.FullName, // Storing full name in FirstName for simplicity based on DTO, or split it
+                FirstName = dto.FullName,
                 PhoneNumber = dto.PhoneNumber,
                 Status = UserStatus.Active,
                 CreatedAt = DateTime.UtcNow
@@ -61,27 +136,23 @@ namespace Affiliance_Applaction.services
                 return ApiResponse<string>.CreateFail($"User creation failed: {errors}");
             }
 
-            // 4. Start Transaction to ensure data consistency
-            // Note: Since Identity is handled separately usually, but we want to ensure Marketer creation succeeds.
-            // If Marketer creation fails, we might want to delete the user or handle it.
-            // For now, let's proceed with Marketer creation.
+          
 
             try
             {
-                // 5. Add to Role
+               
                 await _userManager.AddToRoleAsync(user, "Marketer");
 
-                // 6. Save National ID Image
+             
                 var idPath = await _fileService.SaveFileAsync(dto.NationalIdImage, "marketer_ids");
 
-                // 7. Create Marketer Entity
+                
                 var marketer = new Marketer
                 {
                     UserId = user.Id,
                     NationalIdPath = idPath,
-                    IsVerified = true, // Verified because AI returned "Success" ? Or wait for manual? Logic says "Validate... if not Success return error", so valid means potentially verified or at least AI-passed. Let's set it to true or false. Prompt doesn't specify logic for IsVerified value, but entity has IsVerified. I will set it to false (default) or true. Let's assume verified by AI = true for this flow or leave it default. I'll set it to true since AI check passed.
+                    IsVerified = true, 
                     
-                    // Initialize other required fields with defaults
                     Bio = string.Empty,
                     Niche = string.Empty,
                     CvPath = string.Empty,
@@ -94,12 +165,44 @@ namespace Affiliance_Applaction.services
             }
             catch (Exception ex)
             {
-                // Rollback user creation if marketer creation fails
+              
                 await _userManager.DeleteAsync(user);
-                return ApiResponse<string>.CreateFail($"Registration failed: {ex.Message}");
+                return ApiResponse<string>.CreateFail(RegistrationFailedMessage);
             }
 
             return ApiResponse<string>.CreateSuccess(user.Id.ToString(), "Marketer registered successfully.");
+        }
+        #endregion
+
+
+        private JwtSecurityToken CreateJwtToken(List<Claim> authClaims)
+        {
+         
+            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]));
+
+            int.TryParse(_configuration["JwtSettings:DurationInDays"], out int durationInDays);
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["JwtSettings:Issuer"],
+                audience: _configuration["JwtSettings:Audience"],
+                expires: DateTime.UtcNow.AddDays(durationInDays == 0 ? 30 : durationInDays), // Default 30 days
+                claims: authClaims,
+                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+            );
+
+            return token;
+        }
+
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = RandomNumberGenerator.GetBytes(64);
+            return Convert.ToBase64String(randomNumber);
+        }
+
+        private DateTime GetRefreshTokenExpiryTime()
+        {
+            int.TryParse(_configuration["JwtSettings:RefreshTokenDurationInDays"], out int durationInDays);
+            return DateTime.UtcNow.AddDays(durationInDays == 0 ? 7 : durationInDays);
         }
     }
 }

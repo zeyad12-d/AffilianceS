@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Affiliance_core.Dto;
+using Affiliance_core.Dto.MarkterDto;
 using Affiliance_core.interfaces;
 using Microsoft.AspNetCore.Mvc;
 
