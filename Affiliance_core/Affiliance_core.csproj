@@ -11,8 +11,4 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.22" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Dto\CampanyDto\" />
-  </ItemGroup>
-
 </Project>
