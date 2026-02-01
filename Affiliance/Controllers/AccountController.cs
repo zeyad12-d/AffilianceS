@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Affiliance_core.Dto.CampanyDto;
 using Affiliance_core.Dto.MarkterDto;
 using Affiliance_core.interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -15,14 +16,17 @@ namespace Affiliance_Api.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;
+        private readonly IServicesManager _servicesManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AccountController"/> class.
         /// </summary>
         /// <param name="accountService">The account service for handling account operations.</param>
-        public AccountController(IAccountService accountService)
+        public AccountController(IAccountService accountService, IServicesManager servicesManager)
         {
             _accountService = accountService;
+            _servicesManager = servicesManager;
+
         }
 
         /// <summary>
@@ -116,6 +120,22 @@ namespace Affiliance_Api.Controllers
                 return BadRequest(result);
             }
 
+            return Ok(result);
+        }
+
+
+        [HttpPost("campany_Register")]
+        public async Task<IActionResult> RegisterCampany([FromForm] CompanyRegisterDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var result = await _servicesManager.CampanyServices.RegisterCompanyAsync(dto);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
             return Ok(result);
         }
     }

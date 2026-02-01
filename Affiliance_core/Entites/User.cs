@@ -40,6 +40,7 @@ namespace Affiliance_core.Entites
         Active,
         Inactive,
         Suspended,
+        Pending,
         PendingVerification
     }
 }

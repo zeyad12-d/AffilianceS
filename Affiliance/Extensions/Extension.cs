@@ -137,6 +137,7 @@ namespace Affiliance_Api.Extensions
             });
         }
         #endregion
+
         #region Services
         public static void AddServices(this IServiceCollection services)
         {
@@ -151,6 +152,7 @@ namespace Affiliance_Api.Extensions
             services.AddScoped<IAiService, AiService>();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<ICampanyServices, CampanyService>();
         }
         #endregion
         public static void AddAutoMapperConfigration(this IServiceCollection services)

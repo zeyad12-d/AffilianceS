@@ -3,5 +3,6 @@
     public interface IServicesManager
     {
         IAiService AiService { get; }
+        ICampanyServices CampanyServices { get; }
     }
 }
