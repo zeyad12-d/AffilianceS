@@ -21,6 +21,7 @@ namespace Affiliance
             builder.Services.AddSwaggerConfiguration();
             builder.Services.AddCorsConfiguration();
             builder.Services.AddServices();
+            builder.Services.AddAutoMapperConfigration();
 
             var app = builder.Build();
 

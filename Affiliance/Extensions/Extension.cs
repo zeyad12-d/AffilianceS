@@ -153,5 +153,10 @@ namespace Affiliance_Api.Extensions
             services.AddScoped<IAccountService, AccountService>();
         }
         #endregion
+        public static void AddAutoMapperConfigration(this IServiceCollection services)
+        {
+           
+            services.AddAutoMapper(typeof(Affiliance_Infrasturcture.Data.AffiliancesDBcontext).Assembly);
+        }
     }
 }

@@ -4,6 +4,7 @@ using Affiliance_Infrasturcture.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Affiliance_Infrasturcture.Migrations
 {
     [DbContext(typeof(AffiliancesDBcontext))]
-    partial class AffiliancesDBcontextModelSnapshot : ModelSnapshot
+    [Migration("20260201142908_CampanyUpdate")]
+    partial class CampanyUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
