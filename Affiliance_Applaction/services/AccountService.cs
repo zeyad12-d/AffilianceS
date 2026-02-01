@@ -41,7 +41,7 @@ namespace Affiliance_Applaction.services
             _fileService = fileService;
             _configuration = configuration;
         }
-
+        #region LoignMarketerAsync
         public async Task<ApiResponse<AuthModel>> LoginMarketerAsync(LoginMarkterDto dto)
         {
             if (dto == null || string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
@@ -91,7 +91,9 @@ namespace Affiliance_Applaction.services
             return ApiResponse<AuthModel>.CreateSuccess(authModel, LoginSuccessMessage);
         }
 
-        
+       
+
+        #endregion
 
         #region RegisterMarketerAsync
         public async Task<ApiResponse<string>> RegisterMarketerAsync(MarketerRegisterDto dto)
@@ -174,7 +176,7 @@ namespace Affiliance_Applaction.services
         }
         #endregion
 
-
+        #region Token Generation Methods
         private JwtSecurityToken CreateJwtToken(List<Claim> authClaims)
         {
          
@@ -204,5 +206,34 @@ namespace Affiliance_Applaction.services
             int.TryParse(_configuration["JwtSettings:RefreshTokenDurationInDays"], out int durationInDays);
             return DateTime.UtcNow.AddDays(durationInDays == 0 ? 7 : durationInDays);
         }
+        #endregion
+
+        public async Task<ApiResponse<bool>> LogoutAsync(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return ApiResponse<bool>.CreateFail("User ID is required.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return ApiResponse<bool>.CreateFail("User not found.");
+            }
+
+            // Invalidate refresh token to prevent new access tokens from being issued
+            user.RefreshToken = null;
+            user.RefreshTokenExpiryTime = DateTime.MinValue;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                return ApiResponse<bool>.CreateFail("Logout failed.");
+            }
+
+            return ApiResponse<bool>.CreateSuccess(true, "Logged out successfully.");
+        }
+
+
     }
 }

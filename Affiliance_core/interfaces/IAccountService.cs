@@ -8,5 +8,6 @@ namespace Affiliance_core.interfaces
     {
         Task<ApiResponse<string>> RegisterMarketerAsync(MarketerRegisterDto dto);
         Task<ApiResponse<AuthModel>> LoginMarketerAsync(LoginMarkterDto dto);
+        Task<ApiResponse<bool>> LogoutAsync(string userId);
     }
 }
