@@ -5,18 +5,21 @@ using Microsoft.ML.OnnxRuntime.Tensors;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Affiliance_Infrasturcture.Services
 {
     public class AiService : IAiService
     {
         private readonly InferenceSession _idCardSession;
-    
+
         public AiService()
         {
-            // تحميل الموديل مرة واحدة فقط عند بدء الخدمة
             var modelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MLModel", "detect_id_card.onnx");
-
             if (File.Exists(modelPath))
             {
                 _idCardSession = new InferenceSession(modelPath);
@@ -25,12 +28,7 @@ namespace Affiliance_Infrasturcture.Services
 
         public async Task<string> AnalyzeImageAsync(IFormFile image)
         {
-            if (image == null || image.Length == 0)
-                throw new ArgumentException("Image file is empty");
-
-            if (_idCardSession == null)
-                return "Model not initialized properly.";
-
+            if (image == null || image.Length == 0) return "Image is empty";
             return await Task.Run(() =>
             {
                 try
@@ -38,87 +36,55 @@ namespace Affiliance_Infrasturcture.Services
                     using var stream = image.OpenReadStream();
                     using var img = Image.Load<Rgb24>(stream);
 
-                    const int targetWidth = 640;
-                    const int targetHeight = 640;
-
+                    // 1. Resize مع الحفاظ على الأبعاد (Letterbox) عشان البطاقة متتمطش
                     img.Mutate(x => x.Resize(new ResizeOptions
                     {
-                        Size = new Size(targetWidth, targetHeight),
-                        Mode = ResizeMode.Stretch
+                        Size = new Size(640, 640),
+                        Mode = ResizeMode.Pad // بيضيف حواف سودة بدل ما يمط الصورة
                     }));
 
-                    var input = new DenseTensor<float>(new[] { 1, 3, targetHeight, targetWidth });
-
+                    var input = new DenseTensor<float>(new[] { 1, 3, 640, 640 });
                     img.ProcessPixelRows(accessor =>
                     {
                         for (int y = 0; y < accessor.Height; y++)
                         {
-                            Span<Rgb24> pixelSpan = accessor.GetRowSpan(y);
+                            var row = accessor.GetRowSpan(y);
                             for (int x = 0; x < accessor.Width; x++)
                             {
-                                input[0, 0, y, x] = pixelSpan[x].R / 255f;
-                                input[0, 1, y, x] = pixelSpan[x].G / 255f;
-                                input[0, 2, y, x] = pixelSpan[x].B / 255f;
+                                // جربنا الـ RGB، لو لسه ضعيف الموديل ده غالباً محتاج BGR
+                                // هنعكس الـ R والـ B هنا ونشوف النتيجة
+                                input[0, 0, y, x] = row[x].B / 255f; // Blue
+                                input[0, 1, y, x] = row[x].G / 255f; // Green
+                                input[0, 2, y, x] = row[x].R / 255f; // Red
                             }
                         }
                     });
 
-                    var inputName = _idCardSession.InputMetadata.Keys.First();
-                    var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor(inputName, input) };
-
+                    var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor(_idCardSession.InputMetadata.Keys.First(), input) };
                     using var results = _idCardSession.Run(inputs);
-                    var namedOutput = results.First();
-                    var outputTensor = namedOutput.AsTensor<float>();
-                    var dims = outputTensor.Dimensions;
+                    var outputTensor = results.First().AsTensor<float>();
 
-                    if (dims.Length == 3)
+                    float maxConfidence = 0f;
+                    int channels = outputTensor.Dimensions[1]; // 12
+                    int boxes = outputTensor.Dimensions[2];    // 8400
+
+                    for (int c = 4; c < channels; c++)
                     {
-                        // dims: [1, channels, boxes]
-                        int channels = dims[1];
-                        int boxes = dims[2];
-
-                        // YOLO-like: [x, y, w, h, objectness, class0, class1, ...]
-                        const int classStartIndex = 5;
-                        float maxConfidence = 0f;
-
                         for (int b = 0; b < boxes; b++)
                         {
-                            float objectness = outputTensor[0, 4, b];
-                            float bestClassProb = 0f;
-
-                            if (channels > classStartIndex)
-                            {
-                                for (int c = classStartIndex; c < channels; c++)
-                                {
-                                    float p = outputTensor[0, c, b];
-                                    if (p > bestClassProb) bestClassProb = p;
-                                }
-                            }
-                            else
-                            {
-                                // No class probabilities present — treat objectness as final confidence
-                                bestClassProb = 1f;
-                            }
-
-                            float conf = objectness * bestClassProb;
-                            if (conf > maxConfidence) maxConfidence = conf;
+                            float score = outputTensor[0, c, b];
+                            if (score > maxConfidence) maxConfidence = score;
                         }
+                    }
 
-                        const float threshold = 0.80f;
-                        return maxConfidence > threshold ? "Success" : "Invalid_ID";
-                    }
-                    else
-                    {
-                        // Fallback: flatten-based check (previous behavior)
-                        var flat = outputTensor.ToArray();
-                        bool isIdDetected = flat.Any(v => v > 0.75f);
-                        return isIdDetected ? "Success" : "Invalid_ID";
-                    }
+                    Console.WriteLine($"\n*** NEW TEST REPORT ***");
+                    Console.WriteLine($"Max Confidence: {maxConfidence * 100:0.00}%");
+                    Console.WriteLine($"***********************\n");
+
+                    // لو السكور لسه تحت الـ 40%، الموديل ده محتاج يتغير أو التدريب بتاعه فيه مشكلة
+                    return maxConfidence > 0.35f ? "Success" : "Invalid_ID";
                 }
-                catch (Exception ex)
-                {
-                    return $"Error: {ex.Message}";
-                }
+                catch (Exception ex) { return $"Error: {ex.Message}"; }
             });
         }
     }
