@@ -1,13 +1,16 @@
-﻿namespace Affiliance_Infrasturcture.MappingProfile
+﻿using Affiliance_core.Dto.CampanyDto;
+using Affiliance_core.Entites;
+
+namespace Affiliance_Infrasturcture.MappingProfile
 {
     public class CampanyProfile:AutoMapper.Profile
     {
 
         public CampanyProfile()
         {
-            CreateMap<Affiliance_core.Dto.CampanyDto.CompanyRegisterDto, Affiliance_core.Entites.Company>()
+            CreateMap<CompanyRegisterDto, Company>()
                 .ForMember(dest => dest.CommercialRegister, opt => opt.Ignore())
-                .ForMember(dest => dest.LogoUrl, opt => opt.Ignore());
+                .ForMember(dest => dest.LogoUrl, opt => opt.Ignore()); 
         }
     }
 }

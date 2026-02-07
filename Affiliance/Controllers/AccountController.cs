@@ -138,5 +138,9 @@ namespace Affiliance_Api.Controllers
             }
             return Ok(result);
         }
+        
+
+        // you must make admin services to git all campanys registerd to make it approve or reject 
+        ///remmber to make migration for new changes
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Affiliance_core.ApiHelper;
 using Affiliance_core.Dto.CampanyDto;
+using Affiliance_core.Dto.MarkterDto;
 using Affiliance_core.Entites;
 using Affiliance_core.interfaces;
 using Affiliance_Infrasturcture.Services;
@@ -27,6 +28,8 @@ namespace Affiliance_Applaction.services
             _fileService = fileService;
 
         }
+
+      
         #region Register Company
         public async Task<ApiResponse<string>> RegisterCompanyAsync(CompanyRegisterDto dto)
         {
@@ -70,5 +73,8 @@ namespace Affiliance_Applaction.services
         }
 
         #endregion
+
+
+    
     }
 }
