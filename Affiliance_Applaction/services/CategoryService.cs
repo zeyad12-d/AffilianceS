@@ -40,11 +40,6 @@ namespace Affiliance_Applaction.services
 
         public async Task<ApiResponse<CategoryDetailsDto>> GetCategoryByIdAsync(int id)
         {
-            var category = await _unitOfWork.Repository<Category>().GetByIdAsync(id);
-            
-            if (category == null)
-                return ApiResponse<CategoryDetailsDto>.CreateFail("Category not found");
-
             // Load related data
             var categoryWithRelations = await _unitOfWork.Repository<Category>()
                 .FindAsync(c => c.Id == id, new[] { "Parent", "Children", "Campaigns" });
@@ -59,6 +54,10 @@ namespace Affiliance_Applaction.services
             if (categoryEntity.Children != null && categoryEntity.Children.Any())
             {
                 categoryDto.Children = _mapper.Map<List<CategoryDto>>(categoryEntity.Children);
+            }
+            else
+            {
+                categoryDto.Children = new List<CategoryDto>();
             }
 
             // Map parent
@@ -85,19 +84,29 @@ namespace Affiliance_Applaction.services
 
         public async Task<ApiResponse<CategoryTreeDto>> GetCategoryHierarchyAsync()
         {
-            var rootCategories = await _unitOfWork.Repository<Category>()
-                .FindAsync(c => c.ParentId == null, new[] { "Children", "Children.Children", "Campaigns" });
-
-            var treeDto = new CategoryTreeDto
+            try
             {
-                RootCategories = BuildCategoryTree(rootCategories).ToList()
-            };
+                var rootCategories = await _unitOfWork.Repository<Category>()
+                    .FindAsync(c => c.ParentId == null, new[] { "Children", "Children.Children", "Campaigns" });
 
-            return ApiResponse<CategoryTreeDto>.CreateSuccess(treeDto, "Category hierarchy retrieved successfully");
+                var treeDto = new CategoryTreeDto
+                {
+                    RootCategories = BuildCategoryTree(rootCategories).ToList()
+                };
+
+                return ApiResponse<CategoryTreeDto>.CreateSuccess(treeDto, "Category hierarchy retrieved successfully");
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<CategoryTreeDto>.CreateFail($"Error building category hierarchy: {ex.Message}");
+            }
         }
 
         private IEnumerable<CategoryTreeNodeDto> BuildCategoryTree(IEnumerable<Category> categories)
         {
+            if (categories == null)
+                yield break;
+
             foreach (var category in categories)
             {
                 var node = _mapper.Map<CategoryTreeNodeDto>(category);
@@ -105,6 +114,10 @@ namespace Affiliance_Applaction.services
                 if (category.Children != null && category.Children.Any())
                 {
                     node.Children = BuildCategoryTree(category.Children).ToList();
+                }
+                else
+                {
+                    node.Children = new List<CategoryTreeNodeDto>();
                 }
                 
                 yield return node;
@@ -177,26 +190,50 @@ namespace Affiliance_Applaction.services
 
         public async Task<ApiResponse<IEnumerable<CategoryDto>>> CreateCategoriesBulkAsync(List<CreateCategoryDto> dtos)
         {
+            if (dtos == null || !dtos.Any())
+                return ApiResponse<IEnumerable<CategoryDto>>.CreateFail("No categories provided");
+
             var createdCategories = new List<CategoryDto>();
             var errors = new List<string>();
 
             foreach (var dto in dtos)
             {
-                var result = await CreateCategoryAsync(dto);
-                if (result.Success && result.Data != null)
+                try
                 {
-                    createdCategories.Add(result.Data);
+                    var slugExists = (await _unitOfWork.Repository<Category>().FindAsync(c => c.Slug == dto.Slug)).Any();
+                    if (slugExists)
+                    {
+                        errors.Add($"Slug '{dto.Slug}' already exists");
+                        continue;
+                    }
+
+                    var result = await CreateCategoryAsync(dto);
+                    if (result.Success && result.Data != null)
+                    {
+                        createdCategories.Add(result.Data);
+                    }
+                    else
+                    {
+                        errors.Add($"Failed to create category {dto.NameEn}: {result.Message}");
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    errors.Add($"Failed to create category {dto.NameEn}: {result.Message}");
+                    errors.Add($"Failed to create category {dto.NameEn}: {ex.Message}");
                 }
+            }
+
+            if (createdCategories.Count == 0)
+            {
+                return ApiResponse<IEnumerable<CategoryDto>>.CreateFail(
+                    $"All categories failed to create. Errors: {string.Join(", ", errors)}");
             }
 
             if (errors.Any())
             {
-                return ApiResponse<IEnumerable<CategoryDto>>.CreateFail(
-                    $"Some categories failed to create: {string.Join(", ", errors)}");
+                return ApiResponse<IEnumerable<CategoryDto>>.CreateSuccess(
+                    createdCategories,
+                    $"{createdCategories.Count} created, {errors.Count} failed: {string.Join(", ", errors)}");
             }
 
             return ApiResponse<IEnumerable<CategoryDto>>.CreateSuccess(
@@ -210,74 +247,84 @@ namespace Affiliance_Applaction.services
 
         public async Task<ApiResponse<CategoryDto>> UpdateCategoryAsync(int id, UpdateCategoryDto dto)
         {
-            var category = await _unitOfWork.Repository<Category>().GetByIdAsync(id);
-            if (category == null)
-                return ApiResponse<CategoryDto>.CreateFail("Category not found");
-
-            // Check if slug already exists (if being updated)
-            if (!string.IsNullOrEmpty(dto.Slug) && dto.Slug != category.Slug)
+            try
             {
-                var existingCategory = await _unitOfWork.Repository<Category>()
-                    .FindAsync(c => c.Slug == dto.Slug && c.Id != id);
+                if (dto == null)
+                    return ApiResponse<CategoryDto>.CreateFail("Update data is required");
 
-                if (existingCategory.Any())
-                    return ApiResponse<CategoryDto>.CreateFail("Category with this slug already exists");
+                var category = await _unitOfWork.Repository<Category>().GetByIdAsync(id);
+                if (category == null)
+                    return ApiResponse<CategoryDto>.CreateFail("Category not found");
+
+                // Check if slug already exists (if being updated)
+                if (!string.IsNullOrEmpty(dto.Slug) && dto.Slug != category.Slug)
+                {
+                    var existingCategory = await _unitOfWork.Repository<Category>()
+                        .FindAsync(c => c.Slug == dto.Slug && c.Id != id);
+
+                    if (existingCategory.Any())
+                        return ApiResponse<CategoryDto>.CreateFail("Category with this slug already exists");
+                }
+
+                // Validate parent if provided
+                if (dto.ParentId.HasValue && dto.ParentId.Value != category.ParentId)
+                {
+                    // Prevent circular reference
+                    if (dto.ParentId.Value == id)
+                        return ApiResponse<CategoryDto>.CreateFail("Category cannot be its own parent");
+
+                    // Check if the new parent is a descendant of the current category (Correct Logic)
+                    var isCycle = await IsAncestorOfAsync(id, dto.ParentId.Value);
+                    if (isCycle)
+                        return ApiResponse<CategoryDto>.CreateFail("Cannot set parent to one of its own descendants (circular reference)");
+
+                    var parent = await _unitOfWork.Repository<Category>().GetByIdAsync(dto.ParentId.Value);
+                    if (parent == null)
+                        return ApiResponse<CategoryDto>.CreateFail("Parent category not found");
+                        
+                    category.ParentId = dto.ParentId.Value;
+                }
+
+                // Update only provided fields
+                if (!string.IsNullOrEmpty(dto.NameEn)) category.NameEn = dto.NameEn;
+                if (!string.IsNullOrEmpty(dto.NameAr)) category.NameAr = dto.NameAr;
+                if (!string.IsNullOrEmpty(dto.Slug)) category.Slug = dto.Slug;
+                if (!string.IsNullOrEmpty(dto.Icon)) category.Icon = dto.Icon;
+
+                _unitOfWork.Repository<Category>().Update(category);
+                await _unitOfWork.CompleteAsync();
+
+                // Reload with relations
+                var updatedCategory = await _unitOfWork.Repository<Category>()
+                    .FindAsync(c => c.Id == category.Id, new[] { "Parent", "Children", "Campaigns" });
+
+                var categoryEntity = updatedCategory.FirstOrDefault();
+                if (categoryEntity == null)
+                    return ApiResponse<CategoryDto>.CreateFail("Failed to reload updated category");
+
+                var categoryDto = _mapper.Map<CategoryDto>(categoryEntity);
+                return ApiResponse<CategoryDto>.CreateSuccess(categoryDto, "Category updated successfully");
             }
-
-            // Validate parent if provided
-            if (dto.ParentId.HasValue && dto.ParentId.Value != category.ParentId)
+            catch (Exception ex)
             {
-                // Prevent circular reference
-                if (dto.ParentId.Value == id)
-                    return ApiResponse<CategoryDto>.CreateFail("Category cannot be its own parent");
-
-                // Check if the new parent is a descendant (prevent circular reference)
-                var isDescendant = await IsDescendantAsync(id, dto.ParentId.Value);
-                if (isDescendant)
-                    return ApiResponse<CategoryDto>.CreateFail("Cannot set parent to a descendant category");
-
-                var parent = await _unitOfWork.Repository<Category>().GetByIdAsync(dto.ParentId.Value);
-                if (parent == null)
-                    return ApiResponse<CategoryDto>.CreateFail("Parent category not found");
+                return ApiResponse<CategoryDto>.CreateFail($"Error updating category: {ex.Message}");
             }
-
-            // Update only provided fields
-            if (!string.IsNullOrEmpty(dto.NameEn))
-                category.NameEn = dto.NameEn;
-
-            if (!string.IsNullOrEmpty(dto.NameAr))
-                category.NameAr = dto.NameAr;
-
-            if (!string.IsNullOrEmpty(dto.Slug))
-                category.Slug = dto.Slug;
-
-            if (!string.IsNullOrEmpty(dto.Icon))
-                category.Icon = dto.Icon;
-
-            if (dto.ParentId.HasValue)
-                category.ParentId = dto.ParentId;
-
-            _unitOfWork.Repository<Category>().Update(category);
-            await _unitOfWork.CompleteAsync();
-
-            // Reload with relations
-            var updatedCategory = await _unitOfWork.Repository<Category>()
-                .FindAsync(c => c.Id == category.Id, new[] { "Parent", "Children", "Campaigns" });
-
-            var categoryDto = _mapper.Map<CategoryDto>(updatedCategory.FirstOrDefault());
-            return ApiResponse<CategoryDto>.CreateSuccess(categoryDto, "Category updated successfully");
         }
 
-        private async Task<bool> IsDescendantAsync(int categoryId, int potentialParentId)
+        private async Task<bool> IsAncestorOfAsync(int potentialAncestorId, int targetNodeId)
         {
-            var category = await _unitOfWork.Repository<Category>().GetByIdAsync(categoryId);
-            if (category == null || category.ParentId == null)
-                return false;
-
-            if (category.ParentId == potentialParentId)
-                return true;
-
-            return await IsDescendantAsync(category.ParentId.Value, potentialParentId);
+            var currentId = targetNodeId;
+            while(true)
+            {
+                var node = await _unitOfWork.Repository<Category>().GetByIdAsync(currentId);
+                if (node == null || node.ParentId == null) return false;
+                
+                if (node.ParentId == potentialAncestorId) return true;
+                
+                currentId = node.ParentId.Value;
+                if (currentId == targetNodeId) break;
+            }
+            return false;
         }
 
         #endregion
