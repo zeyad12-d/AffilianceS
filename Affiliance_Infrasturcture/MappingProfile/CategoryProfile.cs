@@ -13,6 +13,17 @@ namespace Affiliance_Infrasturcture.MappingProfile
                 .ForMember(dest => dest.ChildrenCount, opt => opt.MapFrom(src => src.Children != null ? src.Children.Count : 0))
                 .ForMember(dest => dest.CampaignsCount, opt => opt.MapFrom(src => src.Campaigns != null ? src.Campaigns.Count : 0));
 
+            // Category -> CategoryDetailsDto (inherits from CategoryDto)
+            CreateMap<Category, CategoryDetailsDto>()
+                .IncludeBase<Category, CategoryDto>()
+                .ForMember(dest => dest.Children, opt => opt.Ignore())
+                .ForMember(dest => dest.Parent, opt => opt.Ignore());
+
+            // Category -> CategoryTreeNodeDto (for tree structure)
+            CreateMap<Category, CategoryTreeNodeDto>()
+                .IncludeBase<Category, CategoryDto>()
+                .ForMember(dest => dest.Children, opt => opt.Ignore());
+
             // CreateCategoryDto -> Category
             CreateMap<CreateCategoryDto, Category>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
