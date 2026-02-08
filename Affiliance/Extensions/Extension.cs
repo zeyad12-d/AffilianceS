@@ -157,8 +157,10 @@ namespace Affiliance_Api.Extensions
         #endregion
         public static void AddAutoMapperConfigration(this IServiceCollection services)
         {
-           
-            services.AddAutoMapper(typeof(Affiliance_Infrasturcture.Data.AffiliancesDBcontext).Assembly);
+            services.AddAutoMapper(cfg =>
+            {
+                cfg.ShouldMapMethod = m => false; // Disable method mapping to prevent extension method issues
+            }, typeof(Affiliance_Infrasturcture.Data.AffiliancesDBcontext).Assembly);
         }
     }
 }

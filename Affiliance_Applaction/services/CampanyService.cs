@@ -1,16 +1,9 @@
 ﻿using Affiliance_core.ApiHelper;
 using Affiliance_core.Dto.AccountDto;
-using Affiliance_core.Dto.MarkterDto;
 using Affiliance_core.Entites;
 using Affiliance_core.interfaces;
-using Affiliance_Infrasturcture.Services;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Affiliance_Applaction.services
 {
@@ -63,7 +56,7 @@ namespace Affiliance_Applaction.services
                 await _unitOfWork.Repository<Company>().AddAsync(company);
                 await _unitOfWork.CompleteAsync();
 
-                return ApiResponse<string>.CreateSuccess("تم تسجيل الشركة بنجاح، بانتظار مراجعة الإدارة.");
+                return ApiResponse<string>.CreateSuccess("تم تسجيل الشركة بنجاح، بانتظار مراجعة الإدارة.","Succsess");
             }
             catch (Exception ex)
             {
