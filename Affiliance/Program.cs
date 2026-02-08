@@ -53,6 +53,9 @@ namespace Affiliance
                     var userManager = services.GetRequiredService<UserManager<Affiliance_core.Entites.User>>();
                     var dbContext = services.GetRequiredService<Affiliance_Infrasturcture.Data.AffiliancesDBcontext>();
                     await Affiliance_Infrasturcture.Data.DataSeeder.SeedAdminAsync(userManager, dbContext);
+                    
+                    // Seed fake data (categories, companies, marketers, campaigns, etc.)
+                    await Affiliance_Infrasturcture.Data.DataSeeder.SeedAllDataAsync(userManager, dbContext);
                 }
                 catch (Exception ex)
                 {
