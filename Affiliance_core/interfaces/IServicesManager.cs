@@ -4,5 +4,6 @@
     {
         IAiService AiService { get; }
         ICampanyServices CampanyServices { get; }
+        ICategoryService CategoryService { get; }
     }
 }
