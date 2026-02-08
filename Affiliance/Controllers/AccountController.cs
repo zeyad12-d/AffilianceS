@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Affiliance_core.Dto.CampanyDto;
-using Affiliance_core.Dto.MarkterDto;
+using Affiliance_core.Dto.AccountDto;
 using Affiliance_core.interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -60,7 +59,7 @@ namespace Affiliance_Api.Controllers
         }
 
         /// <summary>
-        /// Authenticates a marketer and returns JWT and refresh tokens.
+        /// Authenticates a marketer,Company and returns JWT and refresh tokens.
         /// </summary>
         /// <param name="dto">The login credentials containing email and password.</param>
         /// <returns>
@@ -72,7 +71,7 @@ namespace Affiliance_Api.Controllers
         [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Login([FromBody] LoginMarkterDto dto)
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -138,7 +137,21 @@ namespace Affiliance_Api.Controllers
             }
             return Ok(result);
         }
-        
+        [HttpPost("ChangePassword")]
+        public async Task<IActionResult> ChangePasswordAsync(ChangePasswordDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var result = await _accountService.ChangePasswordAsync(dto);
+            if(!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
+
 
         // you must make admin services to git all campanys registerd to make it approve or reject 
         ///remmber to make migration for new changes

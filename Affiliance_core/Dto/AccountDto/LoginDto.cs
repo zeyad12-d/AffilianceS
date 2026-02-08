@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Affiliance_core.Dto.MarkterDto
+namespace Affiliance_core.Dto.AccountDto
 {
-    public record LoginMarkterDto
+    public record LoginDto
     {
         [Required(ErrorMessage ="Email Is Required")]
         [EmailAddress]

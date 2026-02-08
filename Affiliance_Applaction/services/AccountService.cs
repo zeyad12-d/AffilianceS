@@ -1,5 +1,5 @@
 using Affiliance_core.ApiHelper;
-using Affiliance_core.Dto.MarkterDto;
+using Affiliance_core.Dto.AccountDto;
 using Affiliance_core.Entites;
 using Affiliance_core.interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -41,8 +41,8 @@ namespace Affiliance_Applaction.services
             _fileService = fileService;
             _configuration = configuration;
         }
-        #region LoignMarketerAsync
-        public async Task<ApiResponse<AuthModel>> LoginMarketerAsync(LoginMarkterDto dto)
+        #region LoignAsync
+        public async Task<ApiResponse<AuthModel>> LoginMarketerAsync(LoginDto dto)
         {
             if (dto == null || string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
             {
@@ -235,7 +235,37 @@ namespace Affiliance_Applaction.services
         }
 
 
+        public async Task<ApiResponse<bool>> ChangePasswordAsync(ChangePasswordDto dto)
+        {
+            if (dto == null ||
+                  string.IsNullOrWhiteSpace(dto.UserId) ||
+        string.IsNullOrWhiteSpace(dto.CurrentPassword) ||
+        string.IsNullOrWhiteSpace(dto.NewPassword)
+                )
+            {
+                return ApiResponse<bool>.CreateFail("InVaild input");
+            }
+            var User = await _userManager.FindByIdAsync(dto.UserId);
+            if(User == null)
+            {
+               return ApiResponse<bool>.CreateFail("User Not Found");
+            }
 
+            var result = await _userManager.ChangePasswordAsync(
+                User,
+                dto.CurrentPassword,
+                dto.NewPassword
+            );
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                return ApiResponse<bool>.CreateFail($"Password change failed: {errors}");
+            }
+
+            return ApiResponse<bool>.CreateSuccess(true, "Password changed successfully");
+
+        }
 
     }
 }

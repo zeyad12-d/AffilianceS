@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
-namespace Affiliance_core.Dto.CampanyDto
+namespace Affiliance_core.Dto.AccountDto
 {
     public record CompanyRegisterDto
     {

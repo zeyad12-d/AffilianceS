@@ -1,4 +1,4 @@
-﻿using Affiliance_core.Dto.CampanyDto;
+﻿using Affiliance_core.Dto.AccountDto;
 using Affiliance_core.Entites;
 
 namespace Affiliance_Infrasturcture.MappingProfile

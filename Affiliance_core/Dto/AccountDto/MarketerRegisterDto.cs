@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
-namespace Affiliance_core.Dto.MarkterDto
+namespace Affiliance_core.Dto.AccountDto
 {
     public class MarketerRegisterDto
     {

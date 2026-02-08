@@ -1,5 +1,5 @@
 ﻿using Affiliance_core.ApiHelper;
-using Affiliance_core.Dto.CampanyDto;
+using Affiliance_core.Dto.AccountDto;
 using Affiliance_core.Dto.MarkterDto;
 using Affiliance_core.Entites;
 using Affiliance_core.interfaces;

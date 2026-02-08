@@ -1,4 +1,4 @@
-﻿namespace Affiliance_core.Dto.MarkterDto
+﻿namespace Affiliance_core.Dto.AccountDto
 {
     public  record AuthModel
     {
