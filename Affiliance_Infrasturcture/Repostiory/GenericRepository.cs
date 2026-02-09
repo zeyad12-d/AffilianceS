@@ -70,6 +70,11 @@ namespace Affiliance_Infrasturcture.Repostiory
                 .ToListAsync();
         }
 
+        public IQueryable<T> GetQueryable()
+        {
+            return _context.Set<T>();
+        }
+
         public void Update(T entity)
         {
             _context.Set<T>().Update(entity);
