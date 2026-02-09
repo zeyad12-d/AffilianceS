@@ -21,6 +21,8 @@ namespace Affiliance_core.interfaces
             Expression<Func<T, bool>>? predicate = null,
             Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
             string[]? includes = null);
+        
+        IQueryable<T> GetQueryable();
 
         Task AddAsync(T entity);
         void Update(T entity);
