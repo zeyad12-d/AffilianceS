@@ -138,7 +138,7 @@ namespace Affiliance_Api.Controllers
             return Ok(result);
         }
         [HttpPost("ChangePassword")]
-        public async Task<IActionResult> ChangePasswordAsync(ChangePasswordDto dto)
+        public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordDto dto)
         {
             if (!ModelState.IsValid)
             {
