@@ -153,7 +153,11 @@ namespace Affiliance_Api.Extensions
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<ICampanyServices, CampanyService>();
+            services.AddScoped<ICampaignService, CampaignService>();
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IMarketerService, MarketerService>();
+            services.AddScoped<IReviewService, ReviewService>();
+            services.AddScoped<ITrackingLinkService, TrackingLinkService>();
         }
         #endregion
         public static void AddAutoMapperConfigration(this IServiceCollection services)
