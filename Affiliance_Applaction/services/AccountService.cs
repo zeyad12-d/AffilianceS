@@ -62,6 +62,28 @@ namespace Affiliance_Applaction.services
 
             foreach(var role in roles) { authClaims.Add(new Claim(ClaimTypes.Role, role)); }
 
+            // Add marketerId claim for Marketer role
+            if (roles.Contains("Marketer"))
+            {
+                var marketers = await _unitOfWork.Repository<Marketer>().FindAsync(m => m.UserId == user.Id);
+                var marketer = marketers.FirstOrDefault();
+                if (marketer != null)
+                {
+                    authClaims.Add(new Claim("marketerId", marketer.Id.ToString()));
+                }
+            }
+
+            // Add companyId claim for Company role
+            if (roles.Contains("Company"))
+            {
+                var companies = await _unitOfWork.Repository<Company>().FindAsync(c => c.UserId == user.Id);
+                var company = companies.FirstOrDefault();
+                if (company != null)
+                {
+                    authClaims.Add(new Claim("companyId", company.Id.ToString()));
+                }
+            }
+
           var Token = CreateJwtToken(authClaims);
             var jwtToken = new JwtSecurityTokenHandler().WriteToken(Token);
             var refreshToken = GenerateRefreshToken();
