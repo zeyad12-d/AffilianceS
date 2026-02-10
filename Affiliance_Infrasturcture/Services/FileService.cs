@@ -38,5 +38,10 @@ namespace Affiliance_Infrasturcture.Services
             // Return relative path for database storage
             return Path.Combine("uploads", folderName, uniqueFileName).Replace("\\", "/");
         }
+
+        public async Task<string> UploadFileAsync(IFormFile file, string folderName)
+        {
+            return await SaveFileAsync(file, folderName);
+        }
     }
 }
