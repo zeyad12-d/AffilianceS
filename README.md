@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🚀 Affiliance API
+#  Affiliance API
 
 <p align="center">
   <img src="https://img.shields.io/badge/.NET-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET"/>
@@ -209,9 +209,8 @@ cd ../Affiliance
 dotnet run
 ```
 
-**6. Access the API**
-- API: `https://localhost:7xxx`
-- Swagger UI: `https://localhost:7xxx/swagger`
+
+
 
 </div>
 
@@ -457,7 +456,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Authors
 
-- **Your Team Name** - *Initial work*
+- **Team Name** - *Zeyad Yasser*
 
 ---
 
