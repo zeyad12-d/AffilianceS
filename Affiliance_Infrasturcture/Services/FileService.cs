@@ -43,5 +43,23 @@ namespace Affiliance_Infrasturcture.Services
         {
             return await SaveFileAsync(file, folderName);
         }
+
+        public Task DeleteFileAsync(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                return Task.CompletedTask;
+            }
+
+            var normalizedPath = filePath.TrimStart('~', '/').Replace("/", Path.DirectorySeparatorChar.ToString());
+            var fullPath = Path.Combine(_env.WebRootPath ?? _env.ContentRootPath, normalizedPath);
+
+            if (File.Exists(fullPath))
+            {
+                File.Delete(fullPath);
+            }
+
+            return Task.CompletedTask;
+        }
     }
 }
