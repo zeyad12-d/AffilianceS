@@ -123,6 +123,11 @@ namespace Affiliance_Api.Controllers
         }
 
 
+        /// <summary>
+        /// Registers a new company account.
+        /// </summary>
+        /// <param name="dto">The company registration data including documents and profile info.</param>
+        /// <returns>Returns the registration result.</returns>
         [HttpPost("campany_Register")]
         public async Task<IActionResult> RegisterCampany([FromForm] CompanyRegisterDto dto)
         {
@@ -137,6 +142,12 @@ namespace Affiliance_Api.Controllers
             }
             return Ok(result);
         }
+
+        /// <summary>
+        /// Changes the password for a user account.
+        /// </summary>
+        /// <param name="dto">The current and new password details.</param>
+        /// <returns>Returns the change password result.</returns>
         [HttpPost("ChangePassword")]
         public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordDto dto)
         {
