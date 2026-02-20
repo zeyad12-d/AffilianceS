@@ -97,6 +97,55 @@ namespace Affiliance_Infrasturcture.Migrations
                     b.ToTable("AiSuggestions");
                 });
 
+            modelBuilder.Entity("Affiliance_core.Entites.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("EntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EntityType")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<string>("NewValues")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("OldValues")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AuditLogs");
+                });
+
             modelBuilder.Entity("Affiliance_core.Entites.Campaign", b =>
                 {
                     b.Property<int>("Id")
@@ -250,6 +299,67 @@ namespace Affiliance_Infrasturcture.Migrations
                     b.HasIndex("ParentId");
 
                     b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("Affiliance_core.Entites.Company", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CampanyName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CommercialRegister")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContactEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LogoUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("TaxId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Website")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Companies");
                 });
 
             modelBuilder.Entity("Affiliance_core.Entites.Complaint", b =>
@@ -413,6 +523,131 @@ namespace Affiliance_Infrasturcture.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("Affiliance_core.Entites.NotificationPreference", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsEmailEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsInAppEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPushEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("NotificationType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("NotificationPreferences");
+                });
+
+            modelBuilder.Entity("Affiliance_core.Entites.Payment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<int?>("CampaignId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TransactionId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CampaignId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Payments");
+                });
+
+            modelBuilder.Entity("Affiliance_core.Entites.PaymentMethod", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountDetails")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("AccountHolderName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MarketerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MarketerId");
+
+                    b.ToTable("PaymentMethods");
                 });
 
             modelBuilder.Entity("Affiliance_core.Entites.PerformanceLog", b =>
@@ -638,7 +873,7 @@ namespace Affiliance_Infrasturcture.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Company", b =>
+            modelBuilder.Entity("Affiliance_core.Entites.WithdrawalRequest", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -646,57 +881,45 @@ namespace Affiliance_Infrasturcture.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("AdminNotes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("CampanyName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18, 2)");
 
-                    b.Property<string>("CommercialRegister")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ContactEmail")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsVerified")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("LogoUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<string>("TaxId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("UserId")
+                    b.Property<int>("MarketerId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Website")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("PaymentMethodId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ProcessedBy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("MarketerId");
 
-                    b.ToTable("Companies");
+                    b.HasIndex("PaymentMethodId");
+
+                    b.HasIndex("ProcessedBy");
+
+                    b.ToTable("WithdrawalRequests");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<int>", b =>
@@ -849,7 +1072,7 @@ namespace Affiliance_Infrasturcture.Migrations
                         .WithMany("AiSuggestions")
                         .HasForeignKey("CampaignId");
 
-                    b.HasOne("Company", "Company")
+                    b.HasOne("Affiliance_core.Entites.Company", "Company")
                         .WithMany()
                         .HasForeignKey("CompanyId");
 
@@ -862,6 +1085,15 @@ namespace Affiliance_Infrasturcture.Migrations
                     b.Navigation("Company");
 
                     b.Navigation("Marketer");
+                });
+
+            modelBuilder.Entity("Affiliance_core.Entites.AuditLog", b =>
+                {
+                    b.HasOne("Affiliance_core.Entites.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Affiliance_core.Entites.Campaign", b =>
@@ -880,7 +1112,7 @@ namespace Affiliance_Infrasturcture.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Company", "Company")
+                    b.HasOne("Affiliance_core.Entites.Company", "Company")
                         .WithMany()
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -919,6 +1151,17 @@ namespace Affiliance_Infrasturcture.Migrations
                         .HasForeignKey("ParentId");
 
                     b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("Affiliance_core.Entites.Company", b =>
+                {
+                    b.HasOne("Affiliance_core.Entites.User", "User")
+                        .WithOne("Company")
+                        .HasForeignKey("Affiliance_core.Entites.Company", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Affiliance_core.Entites.Complaint", b =>
@@ -979,6 +1222,45 @@ namespace Affiliance_Infrasturcture.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Affiliance_core.Entites.NotificationPreference", b =>
+                {
+                    b.HasOne("Affiliance_core.Entites.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Affiliance_core.Entites.Payment", b =>
+                {
+                    b.HasOne("Affiliance_core.Entites.Campaign", "Campaign")
+                        .WithMany()
+                        .HasForeignKey("CampaignId");
+
+                    b.HasOne("Affiliance_core.Entites.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Campaign");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Affiliance_core.Entites.PaymentMethod", b =>
+                {
+                    b.HasOne("Affiliance_core.Entites.Marketer", "Marketer")
+                        .WithMany()
+                        .HasForeignKey("MarketerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Marketer");
+                });
+
             modelBuilder.Entity("Affiliance_core.Entites.PerformanceLog", b =>
                 {
                     b.HasOne("Affiliance_core.Entites.TrackingLink", "TrackingLink")
@@ -1034,15 +1316,29 @@ namespace Affiliance_Infrasturcture.Migrations
                     b.Navigation("Marketer");
                 });
 
-            modelBuilder.Entity("Company", b =>
+            modelBuilder.Entity("Affiliance_core.Entites.WithdrawalRequest", b =>
                 {
-                    b.HasOne("Affiliance_core.Entites.User", "User")
-                        .WithOne("Company")
-                        .HasForeignKey("Company", "UserId")
+                    b.HasOne("Affiliance_core.Entites.Marketer", "Marketer")
+                        .WithMany()
+                        .HasForeignKey("MarketerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.HasOne("Affiliance_core.Entites.PaymentMethod", "PaymentMethod")
+                        .WithMany("WithdrawalRequests")
+                        .HasForeignKey("PaymentMethodId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Affiliance_core.Entites.User", "ProcessedByUser")
+                        .WithMany()
+                        .HasForeignKey("ProcessedBy");
+
+                    b.Navigation("Marketer");
+
+                    b.Navigation("PaymentMethod");
+
+                    b.Navigation("ProcessedByUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -1126,6 +1422,11 @@ namespace Affiliance_Infrasturcture.Migrations
             modelBuilder.Entity("Affiliance_core.Entites.Marketer", b =>
                 {
                     b.Navigation("CampaignApplications");
+                });
+
+            modelBuilder.Entity("Affiliance_core.Entites.PaymentMethod", b =>
+                {
+                    b.Navigation("WithdrawalRequests");
                 });
 
             modelBuilder.Entity("Affiliance_core.Entites.TrackingLink", b =>
