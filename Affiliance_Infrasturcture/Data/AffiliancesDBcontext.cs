@@ -30,15 +30,6 @@ namespace Affiliance_Infrasturcture.Data
         public DbSet<AiSuggestion> AiSuggestions { get; set; }
         public DbSet<Category> Categories { get; set; }
 
-        // Payment and Financial
-        public DbSet<Payment> Payments { get; set; }
-        public DbSet<WithdrawalRequest> WithdrawalRequests { get; set; }
-        public DbSet<PaymentMethod> PaymentMethods { get; set; }
-
-        // System
-        public DbSet<AuditLog> AuditLogs { get; set; }
-        public DbSet<NotificationPreference> NotificationPreferences { get; set; }
-
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder); // مهم جداً لضبط جداول الـ Identity
@@ -127,12 +118,6 @@ namespace Affiliance_Infrasturcture.Data
             builder.Entity<TrackingLink>()
                 .HasIndex(t => t.UniqueLink)
                 .IsUnique();
-
-            builder.Entity<WithdrawalRequest>()
-                .HasOne(w => w.PaymentMethod)
-                .WithMany(p => p.WithdrawalRequests)
-                .HasForeignKey(w => w.PaymentMethodId)
-                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

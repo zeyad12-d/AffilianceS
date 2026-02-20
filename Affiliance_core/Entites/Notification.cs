@@ -31,4 +31,14 @@ namespace Affiliance_core.Entites
         [ForeignKey("UserId")]
         public virtual User User { get; set; }
     }
+
+    public enum NotificationType
+    {
+        System,             
+        CampaignUpdate,      
+        ApplicationStatus,  
+        NewEarning,         
+        ComplaintUpdate,    
+        AiMatch             
+    }
 }

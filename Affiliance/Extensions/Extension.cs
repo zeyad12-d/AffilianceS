@@ -26,7 +26,6 @@ namespace Affiliance_Api.Extensions
                             maxRetryCount: 5,
                             maxRetryDelay: TimeSpan.FromSeconds(30),
                             errorNumbersToAdd: null);
-                        sqlOptions.CommandTimeout(120);
                     }));
         }
         #endregion
@@ -159,12 +158,6 @@ namespace Affiliance_Api.Extensions
             services.AddScoped<IMarketerService, MarketerService>();
             services.AddScoped<IReviewService, ReviewService>();
             services.AddScoped<ITrackingLinkService, TrackingLinkService>();
-            services.AddScoped<IPaymentService, PaymentService>();
-            services.AddScoped<IComplaintService, ComplaintService>();
-            services.AddScoped<INotificationService, NotificationService>();
-            services.AddScoped<IAnalyticsService, AnalyticsService>();
-            services.AddScoped<IAuditLogService, AuditLogService>();
-            services.AddHttpClient<IChatbotService, ChatbotService>();
         }
         #endregion
         public static void AddAutoMapperConfigration(this IServiceCollection services)

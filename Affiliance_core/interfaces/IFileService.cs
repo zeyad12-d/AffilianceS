@@ -7,6 +7,5 @@ namespace Affiliance_core.interfaces
     {
         Task<string> SaveFileAsync(IFormFile file, string folderName);
         Task<string> UploadFileAsync(IFormFile file, string folderName);
-        Task DeleteFileAsync(string filePath);
     }
 }

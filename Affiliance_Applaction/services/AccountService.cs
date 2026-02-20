@@ -82,10 +82,6 @@ namespace Affiliance_Applaction.services
                 {
                     authClaims.Add(new Claim("companyId", company.Id.ToString()));
                 }
-                else
-                {
-                    return ApiResponse<AuthModel>.CreateFail("Company profile not found. Please contact support.");
-                }
             }
 
           var Token = CreateJwtToken(authClaims);
@@ -131,9 +127,8 @@ namespace Affiliance_Applaction.services
             }
 
             
-            
             var aiResult = await _servicesManager.AiService.AnalyzeImageAsync(dto.NationalIdImage);
-            if (aiResult != "Success" && !aiResult.Contains("not available"))
+            if (aiResult != "Success")
             {
                 return ApiResponse<string>.CreateFail($"ID Validation Failed: {aiResult}");
             }
